@@ -17,7 +17,6 @@ from typing import Any
 
 from qdevops import APIError, Client
 
-
 # A noiseless simulator should be at 1.0; depolarising noise pushes
 # toward 0.5. Anything below this on `simulator` means something is
 # wrong with the worker or the SDK contract.
@@ -60,7 +59,10 @@ def main() -> int:
             params={"shots": shots},
         )
     except APIError as exc:
-        print(f"bell-example: submit failed: HTTP {exc.status_code} — {exc.message}", file=sys.stderr)
+        print(
+            f"bell-example: submit failed: HTTP {exc.status_code} — {exc.message}",
+            file=sys.stderr,
+        )
         return 1
 
     print(f"bell-example: queued runId={submission.run_id} — waiting…")
