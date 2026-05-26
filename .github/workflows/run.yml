@@ -15,6 +15,11 @@ jobs:
   run:
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Hoist secret presence into an env var the `if:` expressions can
+    # read. GitHub disallows referencing `secrets.*` directly in step-
+    # level conditionals, so we project it to a sentinel here.
+    env:
+      HAS_CREDS: ${{ secrets.QDEVOPS_API_TOKEN != '' && secrets.QDEVOPS_PROJECT_ID != '' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -35,12 +40,12 @@ jobs:
       # workflows). Emit a workflow notice so the absence is visible in
       # the run summary if someone unsets the org secret by accident.
       - name: Skip notice (no credentials)
-        if: ${{ secrets.QDEVOPS_API_TOKEN == '' || secrets.QDEVOPS_PROJECT_ID == '' }}
+        if: env.HAS_CREDS != 'true'
         run: |
           echo "::notice title=Example not executed::QDEVOPS_API_TOKEN or QDEVOPS_PROJECT_ID secret is missing — the live run was skipped. Set them at the qdevops-io org level (or on this repo) to actually exercise the SDK->API->dispatcher path."
 
       - name: Run Bell example
-        if: ${{ secrets.QDEVOPS_API_TOKEN != '' && secrets.QDEVOPS_PROJECT_ID != '' }}
+        if: env.HAS_CREDS == 'true'
         env:
           QDEVOPS_API_TOKEN: ${{ secrets.QDEVOPS_API_TOKEN }}
           QDEVOPS_PROJECT_ID: ${{ secrets.QDEVOPS_PROJECT_ID }}
